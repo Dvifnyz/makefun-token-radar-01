@@ -86,12 +86,25 @@ for (const name of shots) {
 }
 
 // The dossier is written last: the scorer rebuilds it from this /output and compares bytes.
+// Refuse before writing it when the dashboard's source already passes the text cap: the
+// dossier would then cut the source the judge reads, and a cut source is a silent loss.
+const dashBytes = readdirSync(join(here, 'dashboard')).reduce(
+  (n, f) => n + statSync(join(here, 'dashboard', f)).size,
+  0,
+);
+if (dashBytes > TEXT_MAX_BYTES) {
+  process.stderr.write(
+    `token radar: dashboard/ is ${dashBytes} bytes, past the ${TEXT_MAX_BYTES} the dossier's text holds: trim it before it is cut\n`,
+  );
+  process.exit(1);
+}
 writeFileSync(
   join(out, 'dossier.json'),
   buildDossier(out, { text_max_bytes: TEXT_MAX_BYTES, screenshots: SCREENSHOT_CAPS, dashboard: { max_files: 400, max_bytes: 4_194_304 } }),
 );
+const dossierBytes = statSync(join(out, 'dossier.json')).size;
 
 process.stdout.write(
   `token radar: ${snapshot.protocols.length} protocols, ${snapshot.watchlist.length} on the watchlist, ${board.length} rows scored (${radar.early_size} early, ${radar.live_size} live set aside)\n` +
-    `token radar: wrote ${join(out, 'board.json')}, ${join(out, 'data.js')}, ${join(out, 'dashboard')} (${dashFiles.length} files), ${join(out, 'screenshots')} (${shots.length} images) and ${join(out, 'dossier.json')}\n`,
+    `token radar: wrote ${join(out, 'board.json')}, ${join(out, 'data.js')}, ${join(out, 'dashboard')} (${dashFiles.length} files, ${dashBytes} bytes), ${join(out, 'screenshots')} (${shots.length} images) and ${join(out, 'dossier.json')} (${dossierBytes} bytes)\n`,
 );

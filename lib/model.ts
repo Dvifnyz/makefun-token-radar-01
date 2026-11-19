@@ -338,51 +338,97 @@ export function holdDaysFor(age: number | null): number {
   return 30;
 }
 
+/** One routing for a category, shared by the action and the weekly step: one place decides. */
+type CategoryKind =
+  | 'lending'
+  | 'liquidity'
+  | 'bridge'
+  | 'staking'
+  | 'derivatives'
+  | 'prediction'
+  | 'curator'
+  | 'rwa'
+  | 'stable'
+  | 'insurance'
+  | 'default';
+
+function categoryKind(category: string | null): CategoryKind {
+  const c = (category ?? '').toLowerCase();
+  if (c.includes('lend') || c.includes('cdp') || c.includes('collateral') || c.includes('uncollateral')) return 'lending';
+  if (
+    c.includes('dex') ||
+    c.includes('yield') ||
+    c.includes('leveraged farm') ||
+    c.includes('farm') ||
+    c.includes('liquidity manager')
+  )
+    return 'liquidity';
+  if (c.includes('bridge') || c.includes('cross chain')) return 'bridge';
+  if (c.includes('stak') || c.includes('restak')) return 'staking';
+  if (c.includes('perpetual') || c.includes('derivative') || c.includes('option') || c.includes('synthetic')) return 'derivatives';
+  if (c.includes('prediction')) return 'prediction';
+  if (c.includes('curator') || c.includes('allocator') || c.includes('index')) return 'curator';
+  if (c.includes('rwa')) return 'rwa';
+  if (c.includes('stable')) return 'stable';
+  if (c.includes('insurance')) return 'insurance';
+  return 'default';
+}
+
 /** The category's main action, in the words a farmer can follow. */
 function actionFor(p: SnapshotProtocol, capital: number, chain: string): string {
-  const c = (p.category ?? '').toLowerCase();
   const name = p.name;
-  if (c.includes('lend') || c.includes('cdp') || c.includes('collateral') || c.includes('uncollateral'))
-    return `Lend $${capital} of USDC on ${name} (${chain}) and keep the loan open`;
-  if (c.includes('dex') || c.includes('yield') || c.includes('leveraged farm') || c.includes('farm') || c.includes('liquidity manager'))
-    return `Add $${capital} of liquidity to ${name}'s main pool on ${chain} and keep the position open`;
-  if (c.includes('bridge') || c.includes('cross chain'))
-    return `Bridge $${capital} of USDC to ${chain} through ${name} and use the bridged funds in its app`;
-  if (c.includes('stak') || c.includes('restak'))
-    return `Stake $${capital} of the chain asset through ${name} and keep the receipt token`;
-  if (c.includes('perpetual') || c.includes('derivative') || c.includes('option') || c.includes('synthetic'))
-    return `Post $${capital} of USDC as margin on ${name} and open one small hedge`;
-  if (c.includes('prediction'))
-    return `Fund $${capital} and take one market position on ${name}`;
-  if (c.includes('curator') || c.includes('allocator') || c.includes('index'))
-    return `Deposit $${capital} into a ${name} vault on ${chain} and keep the shares`;
-  if (c.includes('rwa'))
-    return `Mint $${capital} of the yield-bearing asset on ${chain} through ${name} and hold it`;
-  if (c.includes('stable'))
-    return `Mint or hold $${capital} of the stable asset through ${name} on ${chain}`;
-  if (c.includes('insurance'))
-    return `Buy $${capital} of cover from ${name} on ${chain} and keep the policy`;
-  return `Deposit $${capital} of USDC into ${name} on ${chain} and keep the position open`;
+  switch (categoryKind(p.category)) {
+    case 'lending':
+      return `Lend $${capital} of USDC on ${name} (${chain}) and keep the loan open`;
+    case 'liquidity':
+      return `Add $${capital} of liquidity to ${name}'s main pool on ${chain} and keep the position open`;
+    case 'bridge':
+      return `Bridge $${capital} of USDC to ${chain} through ${name} and use the bridged funds in its app`;
+    case 'staking':
+      return `Stake $${capital} of the chain asset through ${name} and keep the receipt token`;
+    case 'derivatives':
+      return `Post $${capital} of USDC as margin on ${name} and open one small hedge`;
+    case 'prediction':
+      return `Fund $${capital} and take one market position on ${name}`;
+    case 'curator':
+      return `Deposit $${capital} into a ${name} vault on ${chain} and keep the shares`;
+    case 'rwa':
+      return `Mint $${capital} of the yield-bearing asset on ${chain} through ${name} and hold it`;
+    case 'stable':
+      return `Mint or hold $${capital} of the stable asset through ${name} on ${chain}`;
+    case 'insurance':
+      return `Buy $${capital} of cover from ${name} on ${chain} and keep the policy`;
+    default:
+      return `Deposit $${capital} of USDC into ${name} on ${chain} and keep the position open`;
+  }
 }
 
 /** The category's weekly qualifying action, in the words a farmer can follow. */
 function weeklyFor(p: SnapshotProtocol): string {
-  const c = (p.category ?? '').toLowerCase();
-  if (c.includes('lend') || c.includes('cdp') || c.includes('collateral') || c.includes('uncollateral'))
-    return 'Adjust the loan, add collateral or borrow a small amount once';
-  if (c.includes('dex') || c.includes('yield') || c.includes('leveraged farm') || c.includes('farm') || c.includes('liquidity manager'))
-    return 'Swap at least $10 through the pool once, or add a little more liquidity';
-  if (c.includes('bridge') || c.includes('cross chain')) return 'Bridge a small amount once';
-  if (c.includes('stak') || c.includes('restak')) return 'Top up the stake or restake the rewards once';
-  if (c.includes('perpetual') || c.includes('derivative') || c.includes('option') || c.includes('synthetic'))
-    return 'Open or close one small position';
-  if (c.includes('prediction')) return 'Take one small market position';
-  if (c.includes('curator') || c.includes('allocator') || c.includes('index'))
-    return 'Deposit a little more or rebalance the vault once';
-  if (c.includes('rwa')) return 'Mint or redeem a small amount once';
-  if (c.includes('stable')) return 'Mint or redeem a small amount once';
-  if (c.includes('insurance')) return 'Renew or adjust the cover once';
-  return 'Make one deposit or interaction with the protocol once';
+  switch (categoryKind(p.category)) {
+    case 'lending':
+      return 'Adjust the loan, add collateral or borrow a small amount once';
+    case 'liquidity':
+      return 'Swap at least $10 through the pool once, or add a little more liquidity';
+    case 'bridge':
+      return 'Bridge a small amount once';
+    case 'staking':
+      return 'Top up the stake or restake the rewards once';
+    case 'derivatives':
+      return 'Open or close one small position';
+    case 'prediction':
+      return 'Take one small market position';
+    case 'curator':
+      return 'Deposit a little more or rebalance the vault once';
+    case 'rwa':
+      return 'Mint or redeem a small amount once';
+    case 'stable':
+      return 'Mint or redeem a small amount once';
+    case 'insurance':
+      return 'Renew or adjust the cover once';
+    default:
+      return 'Make one deposit or interaction with the protocol once';
+  }
 }
 
 /**
