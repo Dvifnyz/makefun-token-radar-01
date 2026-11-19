@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Radar: pre-token protocols ranked by implied launch value</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="kicker">Token Radar &middot; model radar-2</p>
+    <h1>Which pre-token protocol is worth farming next?</h1>
+    <p class="lede">Every protocol below records no token yet. Each is ranked by an implied launch value
+      worked out from its own figures &mdash; the value locked, its seven-day growth, how long it has
+      run with no token, how many chains it runs on, and what kind of protocol it is &mdash; and each
+      carries the steps to farm it.</p>
+    <p class="meta" id="meta">Loading the snapshot&hellip;</p>
+  </div>
+</header>
+<main class="wrap">
+  <section class="stats" id="stats" aria-label="Snapshot summary"></section>
+
+  <section class="controls" aria-label="Board controls">
+    <label class="field">Search
+      <input id="q" type="search" placeholder="Name or slug&hellip;" autocomplete="off">
+    </label>
+    <label class="field">Category
+      <select id="category"><option value="all">All categories</option></select>
+    </label>
+    <label class="field">Chain
+      <select id="chain"><option value="all">All chains</option></select>
+    </label>
+    <label class="field">Sort by
+      <select id="sort">
+        <option value="implied">Implied value</option>
+        <option value="tvl">Value locked</option>
+        <option value="growth">7-day change</option>
+        <option value="age">Age with no token</option>
+      </select>
+    </label>
+    <div class="scope" role="group" aria-label="Scope">
+      <button type="button" data-scope="all" class="on">All pre-token</button>
+      <button type="button" data-scope="watchlist">Watchlist only</button>
+      <button type="button" data-scope="early">Early finds only</button>
+    </div>
+  </section>
+
+  <section aria-label="Ranked board">
+    <h2 id="board-title">The board</h2>
+    <p class="hint">Click a row for its value breakdown and farm plan. Ranks are the model's claim,
+      not the table's order: sort the table how you like and the ranks stay put.</p>
+    <div class="table-wrap">
+      <table id="board">
+        <thead><tr>
+          <th class="num">#</th><th>Protocol</th><th>Category</th><th>Chains</th>
+          <th class="num">Value locked</th><th class="num">7-day</th><th class="num">Age</th>
+          <th class="num">Implied value</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="count" id="count"></p>
+  </section>
+
+  <section id="detail" aria-label="Protocol detail" hidden></section>
+
+  <section aria-label="Protocols that already trade">
+    <h2>Already trading &mdash; the market&rsquo;s own values</h2>
+    <p class="hint">These protocols record a token that already trades, so they are not ranked here.
+      Their values below are the market&rsquo;s, not the model&rsquo;s, shown so the board&rsquo;s
+      pre-token rows are never confused with them.</p>
+    <div class="table-wrap">
+      <table id="live">
+        <thead><tr>
+          <th>Protocol</th><th>Category</th><th>Chains</th>
+          <th class="num">Value locked</th><th class="num">Market cap</th><th class="num">7-day</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="model-note" aria-label="How the value is worked out">
+    <h2>How the implied value is worked out</h2>
+    <p>For every pre-token protocol, from the snapshot&rsquo;s figures alone:</p>
+    <p class="formula">implied = TVL &times; 0.30 &times; growth &times; maturity &times; breadth &times; category</p>
+    <ul>
+      <li><strong>Growth</strong> is the seven-day change, clamped to &minus;50% &hellip; +100%, weighted 0.6:
+        1 + growth &divide; 100 &times; 0.6. No change reported counts as 0%.</li>
+      <li><strong>Maturity</strong> is 0.70 + age &divide; 1460 &times; 0.50, where age is the days since the
+        protocol was first listed with no token; a protocol with no listing date counts as 240 days.</li>
+      <li><strong>Breadth</strong> is 1 + chains &times; 0.03, up to five chains: a protocol live on more
+        chains reaches more holders.</li>
+      <li><strong>Category</strong> weighs fee-bearing activity: Dexs 1.15, Lending 1.12, Yield and Yield
+        Aggregator 1.10, Derivatives 1.08, CDP and RWA 1.06, Onchain Capital Allocator and Risk Curators
+        1.05, every other category 1.00.</li>
+    </ul>
+    <p>The board never says a protocol <em>has</em> no token: the snapshot is DefiLlama&rsquo;s record, not
+      proof, so each row says the protocol <em>records</em> no token. The implied value is this radar&rsquo;s
+      own claim, never DefiLlama&rsquo;s and never a promise that a token will be issued, or what it will
+      be worth if one is.</p>
+    <p class="source" id="source"></p>
+  </section>
+</main>
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
